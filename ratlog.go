@@ -17,9 +17,14 @@ type Ratlog struct {
 // https://github.com/ratlog/ratlog-spec#fields
 type Fields map[string]string
 
+// New returns a new instance of Ratlog without any tags
+func New(writer io.Writer) Ratlog {
+	return Ratlog{writer: writer, tags: []string{}}
+}
+
 // Tag returns a new Ratlog instance with appended tags
 // https://github.com/ratlog/ratlog-spec#tags
-func (log Ratlog) Tag(tags []string) Ratlog {
+func (log Ratlog) Tag(tags ...string) Ratlog {
 	return Ratlog{writer: log.writer, tags: append(log.tags, tags...)}
 }
 
@@ -96,13 +101,9 @@ type Props struct {
 
 // Log writes a log to the writer
 func (log *Ratlog) Log(properties Props) error {
-	_, err := log.writer.Write([]byte(getLogMessage(properties.message, properties.fields, properties.tags)))
+	content := getLogMessage(properties.message, properties.fields, append(log.tags, properties.tags...))
+	_, err := log.writer.Write([]byte(content))
 	return err
-}
-
-// New returns a new instance of Ratlog without any tags
-func New(writer io.Writer) Ratlog {
-	return Ratlog{writer: writer, tags: []string{}}
 }
 
 // LogItem represents a log.

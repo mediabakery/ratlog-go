@@ -8,12 +8,22 @@ There are two way you can use ratlog.
 
 ```golang
 var b bytes.Buffer
-ratlog := Ratlog{writer: &b}
-ratlog.Log(Props{message: test.Data.Message, tags: test.Data.Tags, fields: fields})
+rlog := ratlog.New(&b)
+rlog.Log(Props{message: test.Data.Message, tags: test.Data.Tags, fields: fields})
 ```
 
 ```golang
 var b bytes.Buffer
-ratlog := Ratlog{writer: &b}
-ratlog.Message("Hello World").Fields("a": "1", "b": "2").Tag("debug", "error").Log()
+rlog := ratlog.New(&b)
+rlog.Message("Hello World").Fields("a": "1", "b": "2").Tag("debug", "error").Log()
+```
+
+You can provide a log instance with an additional tag
+
+```golang
+var b bytes.Buffer
+rlog := ratlog.New(&b)
+errorLog := rlog.Tag("error")
+errorLog.Message("Hello World").Fields("a": "2", "b": "3").Tag("bla", "baz").Log()
+// [error|debug|bla|baz] Hello World | a: 2 | b: 3
 ```

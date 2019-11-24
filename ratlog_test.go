@@ -64,7 +64,7 @@ func runTestsuite(t *testing.T, tests []Test, name string) {
 			fields = getStringMap(test.Data.Fields.(map[string]interface{}))
 		}
 		var b bytes.Buffer
-		ratlog := Ratlog{writer: &b}
+		ratlog := New(&b)
 		ratlog.Log(Props{message: test.Data.Message, tags: test.Data.Tags, fields: fields})
 		if test.Log != b.String() {
 			t.Errorf("%s test # %d failed\nExpected: %#v\nReceived: %#v\n\n", name, index+1, test.Log, b.String())
@@ -82,9 +82,24 @@ func TestSuite(t *testing.T) {
 	runTestsuite(t, testsuite.Parsing, "Parsing")
 }
 
+func TestTag(t *testing.T) {
+	var b bytes.Buffer
+	ratlog := New(&b)
+	errorLag := ratlog.Tag("error", "debug")
+	err := errorLag.Message("Hello World").Tag("bla", "baz").Fields("a", "2", "b", "3").Log()
+
+	if err != nil {
+		t.Error(err)
+	}
+	expected := "[error|debug|bla|baz] Hello World | a: 2 | b: 3\n"
+	if b.String() != expected {
+		t.Errorf("failed\nExpected: %#v\nReceived: %#v\n\n", expected, b.String())
+	}
+}
+
 func TestBuilder(t *testing.T) {
 	var b bytes.Buffer
-	ratlog := Ratlog{writer: &b}
+	ratlog := New(&b)
 	err := ratlog.Message("Hello World").Tag("bla", "baz").Fields("a", "2", "b", "3").Log()
 
 	if err != nil {
